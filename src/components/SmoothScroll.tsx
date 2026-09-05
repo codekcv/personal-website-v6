@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Lenis from "lenis";
 
 let lenisInstance: Lenis | null = null;
@@ -37,14 +38,17 @@ export default function SmoothScroll() {
   return null;
 }
 
-/** Scroll to a section — routed through Lenis when it is running. */
-export function scrollToSection(id: string) {
+/**
+ * Scroll to a section on the current page — routed through Lenis when it
+ * is running. Returns false when the section isn't on this page.
+ */
+export function scrollToSection(id: string): boolean {
   const el = document.getElementById(id);
-  if (!el) return;
+  if (!el) return false;
 
   if (lenisInstance) {
     lenisInstance.scrollTo(el, { duration: 1.5 });
-    return;
+    return true;
   }
 
   el.scrollIntoView({
@@ -53,13 +57,56 @@ export function scrollToSection(id: string) {
       : "smooth",
     block: "start",
   });
+  return true;
 }
+
+/**
+ * Section navigation for the chrome, which is global and so can be asked
+ * for a section the current page doesn't have (the 404, say). Scrolls when
+ * the target is here, otherwise routes home to it rather than failing
+ * silently — <Experience> picks the hash up once the entrance is over.
+ */
+export function useSectionNav() {
+  const router = useRouter();
+  return useCallback(
+    (id: string) => {
+      if (!scrollToSection(id)) router.push(`/#${id}`);
+    },
+    [router],
+  );
+}
+
+let scrollLocked = false;
+const unlockWaiters = new Set<() => void>();
 
 /** Used by the threshold overlay to freeze the page while it plays. */
 export function setScrollLocked(locked: boolean) {
+  scrollLocked = locked;
+
   if (lenisInstance) {
     if (locked) lenisInstance.stop();
     else lenisInstance.start();
   }
   document.body.style.overflow = locked ? "hidden" : "";
+
+  if (!locked && unlockWaiters.size) {
+    const waiting = [...unlockWaiters];
+    unlockWaiters.clear();
+    waiting.forEach((fn) => fn());
+  }
+}
+
+/**
+ * Run once the page is scrollable again — immediately if it already is.
+ * A scroll requested while the threshold holds the lock is swallowed by
+ * the stopped Lenis instance, so deep links have to wait it out.
+ * Returns an unsubscribe.
+ */
+export function whenScrollUnlocked(fn: () => void): () => void {
+  if (!scrollLocked) {
+    fn();
+    return () => {};
+  }
+  unlockWaiters.add(fn);
+  return () => unlockWaiters.delete(fn);
 }

@@ -10,13 +10,14 @@ import {
 import { useEffect, useRef } from "react";
 import { site } from "@/data/site";
 import { RevealChars } from "../Reveal";
-import { scrollToSection } from "../SmoothScroll";
+import { useSectionNav } from "../SmoothScroll";
 import { useExperience } from "../Experience";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
 export default function Hero() {
   const { entered, still } = useExperience();
+  const goTo = useSectionNav();
   const ref = useRef<HTMLElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -181,7 +182,7 @@ export default function Hero() {
           transition={{ duration: 1.2, ease: EASE, delay: base + 1.05 }}
         >
           <button
-            onClick={() => scrollToSection("work")}
+            onClick={() => goTo("work")}
             className="group glass glass-lit relative overflow-hidden rounded-full px-7 py-3 text-sm text-ink transition-colors duration-300 hover:bg-white/[0.09]"
           >
             <span className="relative z-10">See the work</span>
@@ -201,7 +202,7 @@ export default function Hero() {
 
       {/* Scroll cue */}
       <motion.button
-        onClick={() => scrollToSection("ethos")}
+        onClick={() => goTo("ethos")}
         className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-3"
         style={{ opacity }}
         initial={{ opacity: 0 }}

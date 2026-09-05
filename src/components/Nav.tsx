@@ -3,12 +3,13 @@
 import { motion, useMotionValueEvent, useScroll } from "motion/react";
 import { useEffect, useState } from "react";
 import { nav, site } from "@/data/site";
-import { scrollToSection } from "./SmoothScroll";
+import { useSectionNav } from "./SmoothScroll";
 import { useExperience } from "./Experience";
 import { cn } from "@/lib/utils";
 
 export default function Nav() {
   const { openPalette, entered } = useExperience();
+  const goTo = useSectionNav();
   const [active, setActive] = useState<string>("hero");
   const [condensed, setCondensed] = useState(false);
   const { scrollY } = useScroll();
@@ -65,7 +66,7 @@ export default function Nav() {
       >
         {/* Mark */}
         <button
-          onClick={() => scrollToSection("hero")}
+          onClick={() => goTo("hero")}
           className="group flex items-center gap-3 rounded-full py-1 pr-3"
           aria-label={`${site.name} — back to top`}
         >
@@ -113,7 +114,7 @@ export default function Nav() {
           {nav.slice(1).map((item) => (
             <button
               key={item.id}
-              onClick={() => scrollToSection(item.id)}
+              onClick={() => goTo(item.id)}
               aria-current={active === item.id ? "true" : undefined}
               className="relative rounded-full px-4 py-1.5 font-mono text-[11px] tracking-[0.2em] uppercase text-muted transition-colors duration-300 hover:text-ink"
             >

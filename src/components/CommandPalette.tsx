@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { nav, site, socials } from "@/data/site";
-import { scrollToSection } from "./SmoothScroll";
+import { useSectionNav } from "./SmoothScroll";
 import { useExperience } from "./Experience";
 import { cn } from "@/lib/utils";
 
@@ -198,6 +198,7 @@ function Dialog({
 export default function CommandPalette() {
   const { paletteOpen, closePalette, togglePalette, still, setStill } =
     useExperience();
+  const goTo = useSectionNav();
 
   const actions = useMemo<Action[]>(() => {
     const list: Action[] = nav.map((n) => ({
@@ -205,7 +206,7 @@ export default function CommandPalette() {
       label: n.label === "Top" ? "Back to top" : n.label,
       hint: "Section",
       group: "Navigate",
-      run: () => scrollToSection(n.id),
+      run: () => goTo(n.id),
     }));
 
     list.push({
@@ -241,7 +242,7 @@ export default function CommandPalette() {
     });
 
     return list;
-  }, [still, setStill]);
+  }, [still, setStill, goTo]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

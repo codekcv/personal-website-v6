@@ -4,14 +4,19 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
 import AuroraCanvas from "./AuroraCanvas";
 import Cursor from "./Cursor";
-import SmoothScroll from "./SmoothScroll";
+import SmoothScroll, {
+  scrollToSection,
+  whenScrollUnlocked,
+} from "./SmoothScroll";
 import Threshold from "./Threshold";
 import ScrollProgress from "./ScrollProgress";
 import Nav from "./Nav";
@@ -80,6 +85,30 @@ export default function Experience({ children }: { children: ReactNode }) {
   }, []);
 
   const onOpen = useCallback(() => setOpened(true), []);
+
+  // Arriving at /#work — from the 404, or from a shared link. The browser's
+  // own anchor jump happens before the sections have laid out, and the
+  // threshold resets scroll anyway, so do it once the entrance is over.
+  const hashHandled = useRef(false);
+  useEffect(() => {
+    if (!entered || hashHandled.current) return;
+    hashHandled.current = true;
+
+    const id = window.location.hash.slice(1);
+    if (!id || !document.getElementById(id)) return;
+
+    // Wait for the threshold to release the scroll lock, then give it a
+    // frame so Lenis is running and the layout has settled.
+    let raf = 0;
+    const cancel = whenScrollUnlocked(() => {
+      raf = requestAnimationFrame(() => scrollToSection(id));
+    });
+
+    return () => {
+      cancel();
+      cancelAnimationFrame(raf);
+    };
+  }, [entered]);
 
   const [paletteOpen, setPaletteOpen] = useState(false);
 
