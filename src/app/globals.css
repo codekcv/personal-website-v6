@@ -1,0 +1,252 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Ground ───────────────────────────────────────────── */
+  --color-void: #04050a;
+  --color-abyss: #080a14;
+  --color-ink: #eef0f7;
+  --color-dim: #a2a8bd;
+  --color-muted: #6f758c;
+  --color-faint: #3a3f52;
+
+  /* ── Light ────────────────────────────────────────────── */
+  --color-violet: #6c5cff;
+  --color-cyan: #2fd4dd;
+  --color-gold: #f3c179;
+  --color-rose: #ff7a9c;
+
+  /* ── Type ─────────────────────────────────────────────── */
+  --font-display: var(--font-instrument), "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* ── Motion ───────────────────────────────────────────── */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+}
+
+@layer base {
+  * {
+    border-color: color-mix(in oklab, var(--color-ink) 8%, transparent);
+  }
+
+  html {
+    background: var(--color-void);
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /*
+   * Deliberately transparent. The root background propagates to the page
+   * canvas, so it paints behind everything; giving <body> its own opaque
+   * background would paint it *over* the fixed z-index:-10 field layer.
+   */
+  body {
+    background: transparent;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-violet) 55%, transparent);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-cyan) 80%, transparent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Thin, quiet scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--color-ink) 10%, transparent);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--color-ink) 20%, transparent);
+    background-clip: content-box;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer utilities {
+  /* A 1px hairline that reads as light, not as a border. */
+  .hairline {
+    border: 1px solid color-mix(in oklab, var(--color-ink) 7%, transparent);
+  }
+
+  .glass {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-ink) 5%, transparent),
+      color-mix(in oklab, var(--color-ink) 2%, transparent)
+    );
+    border: 1px solid color-mix(in oklab, var(--color-ink) 7%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+  }
+
+  /* Inner top highlight — the tell of a real glass surface. */
+  .glass-lit {
+    position: relative;
+  }
+  .glass-lit::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--color-ink) 22%, transparent),
+      transparent 38%,
+      transparent 65%,
+      color-mix(in oklab, var(--color-ink) 7%, transparent)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* A pearlescent sweep for display type: cool white through pale
+     blue and lilac into warm cream. Light on a surface, not a rainbow. */
+  .text-lumen {
+    background-image: linear-gradient(
+      100deg,
+      #ffffff 0%,
+      #dceff7 20%,
+      #b8c9f0 46%,
+      #d6c7ea 68%,
+      #f2ddbe 100%
+    );
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .mono-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .no-scroll {
+    overflow: hidden;
+    height: 100dvh;
+  }
+}
+
+/* Fine-pointer devices hide the native cursor in favour of the custom light. */
+@media (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* A slow band of light travelling across gradient text. */
+@keyframes sheen {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes drop {
+  0% {
+    transform: translateY(-120%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(320%);
+    opacity: 0;
+  }
+}
+
+/* Offsets account for the 0.75rem gap between duplicated sets. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 0.375rem));
+  }
+}
+
+@keyframes marquee-reverse {
+  from {
+    transform: translateX(calc(-50% - 0.375rem));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
